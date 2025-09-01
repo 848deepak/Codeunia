@@ -11,7 +11,6 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { BlogPost } from "@/components/data/blog-posts"
 import ReactMarkdown from 'react-markdown'
-import rehypeRaw from 'rehype-raw'
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { ShareButton } from "@/components/ui/share-button"
 import Image from "next/image";
@@ -365,7 +364,7 @@ export default function BlogPostPage() {
               <div className="space-y-6">
                 {/* full content for authenticated users */}
                 <div className="prose prose-lg dark:prose-invert bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                  <ReactMarkdown>
                     {post?.content}
                   </ReactMarkdown>
                 </div>
@@ -383,7 +382,7 @@ export default function BlogPostPage() {
               <div className="space-y-6">
                 {/* preview content for non-authenticated users */}
                 <div className="prose prose-lg dark:prose-invert bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                  <ReactMarkdown>
                     {post?.content.split('\n\n').slice(0, 3).join('\n\n')}
                   </ReactMarkdown>
                 </div>
