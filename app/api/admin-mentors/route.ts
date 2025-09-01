@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
-// Setup Supabase client with service role key (bypasses RLS)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 
 // GET: List all mentor applications
 export async function GET() {
+  const supabaseAuth = await createSupabaseServerClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+  }
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   const { data, error } = await supabase
     .from("mentor_applications")
     .select("*")
@@ -22,7 +27,17 @@ export async function GET() {
 
 // POST: Create a new mentor application
 export async function POST(req: Request) {
+  const supabaseAuth = await createSupabaseServerClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+  }
+
   const body = await req.json();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   const { data, error } = await supabase
     .from("mentor_applications")
     .insert([body])
@@ -36,11 +51,21 @@ export async function POST(req: Request) {
 
 // PATCH: Update a mentor application (expects { id, ...fields })
 export async function PATCH(req: Request) {
+  const supabaseAuth = await createSupabaseServerClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+  }
+
   const body = await req.json();
   const { id, ...fields } = body;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   const { data, error } = await supabase
     .from("mentor_applications")
     .update(fields)
@@ -55,11 +80,21 @@ export async function PATCH(req: Request) {
 
 // DELETE: Delete a mentor application (expects { id })
 export async function DELETE(req: Request) {
+  const supabaseAuth = await createSupabaseServerClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+  }
+
   const body = await req.json();
   const { id } = body;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   const { error } = await supabase
     .from("mentor_applications")
     .delete()

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { Event } from '@/components/data/events'
 
 export interface EventsFilters {
@@ -18,7 +18,14 @@ export interface EventsResponse {
 }
 
 export class EventsService {
-  private supabase = createClient()
+  private get supabase() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !anonKey) {
+      throw new Error('Supabase environment variables are not set')
+    }
+    return createSupabaseClient(url, anonKey)
+  }
 
   // Get all events with optional filters
   async getEvents(filters: EventsFilters = {}): Promise<EventsResponse> {
@@ -71,11 +78,13 @@ export class EventsService {
       .order('date', { ascending: true })
 
     // Apply pagination
-    if (filters.limit) {
+    if (typeof filters.limit === 'number') {
       query = query.limit(filters.limit)
     }
-    if (filters.offset) {
-      query = query.range(filters.offset, (filters.offset + (filters.limit || 10)) - 1)
+    if (typeof filters.offset === 'number') {
+      const start = filters.offset
+      const end = start + ((typeof filters.limit === 'number' ? filters.limit : 10) - 1)
+      query = query.range(start, end)
     }
 
     const { data, error, count } = await query

@@ -13,10 +13,6 @@ import { createBrowserClient } from "@supabase/ssr"
 import { toast } from "sonner"
 
 export function ContactForm() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -35,6 +31,10 @@ export function ContactForm() {
     setIsSubmitting(true)
 
     try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
       const { error } = await supabase
         .from('contact_submissions')
         .insert([

@@ -7,9 +7,9 @@ import { User } from "@supabase/supabase-js"
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
   useEffect(() => {
+    const supabase = createClient()
     // get initial session here 
     const getInitialSession = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -27,7 +27,7 @@ export function useAuth() {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [])
 
   return { user, loading, isAdmin: user?.user_metadata?.role === 'admin' }
 } 
