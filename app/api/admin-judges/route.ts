@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdminAuth } from "@/lib/auth/admin";
 
 // Setup Supabase client with service role key (bypasses RLS)
 const supabase = createClient(
@@ -8,7 +9,12 @@ const supabase = createClient(
 );
 
 // GET: List all judges applications
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { isAdmin, error: authError } = await verifyAdminAuth(request)
+  if (!isAdmin) {
+    return NextResponse.json({ error: authError }, { status: 401 })
+  }
+
   const { data, error } = await supabase
     .from("judges_applications")
     .select("*")
@@ -35,7 +41,12 @@ export async function POST(req: Request) {
 }
 
 // PATCH: Update a judge application (expects { id, ...fields })
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
+  const { isAdmin, error: authError } = await verifyAdminAuth(req)
+  if (!isAdmin) {
+    return NextResponse.json({ error: authError }, { status: 401 })
+  }
+
   const body = await req.json();
   const { id, ...fields } = body;
   if (!id) {
@@ -54,7 +65,12 @@ export async function PATCH(req: Request) {
 }
 
 // DELETE: Delete a judge application (expects { id })
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
+  const { isAdmin, error: authError } = await verifyAdminAuth(req)
+  if (!isAdmin) {
+    return NextResponse.json({ error: authError }, { status: 401 })
+  }
+
   const body = await req.json();
   const { id } = body;
   if (!id) {
