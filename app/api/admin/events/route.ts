@@ -6,7 +6,7 @@ import { verifyAdminAuth } from '@/lib/auth/admin'
 export async function POST(request: NextRequest) {
   try {
     // Check authentication first
-    const { isAdmin, error: authError } = await verifyAdminAuth(request)
+    const { isAdmin, error: authError } = await verifyAdminAuth()
     if (!isAdmin) {
       return NextResponse.json({ error: authError }, { status: 401 })
     }
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Check authentication first
-    const { isAdmin, error: authError } = await verifyAdminAuth(request)
+    const { isAdmin, error: authError } = await verifyAdminAuth()
     if (!isAdmin) {
       return NextResponse.json({ error: authError }, { status: 401 })
     }
@@ -179,7 +179,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication first
-    const { isAdmin, error: authError } = await verifyAdminAuth(request)
+    const { isAdmin, error: authError } = await verifyAdminAuth()
     if (!isAdmin) {
       return NextResponse.json({ error: authError }, { status: 401 })
     }

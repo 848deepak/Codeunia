@@ -505,7 +505,7 @@ export default function AdminBlogPage() {
         slug: formData.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
       }
 
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from("blogs")
         .insert([insertData])
         .select()
@@ -553,7 +553,7 @@ export default function AdminBlogPage() {
         image: formData.image.trim(),
       }
 
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from("blogs")
         .update(updateData)
         .eq("id", showEdit.id)

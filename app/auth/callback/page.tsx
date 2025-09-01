@@ -68,7 +68,7 @@ function OAuthCallbackContent() {
           toast.error("No authentication session found. Please sign in again.");
           router.replace(`/auth/signin?returnUrl=${encodeURIComponent(returnUrl)}`);
         }
-      } catch (error) {
+      } catch {
         toast.error("Authentication failed. Please try signing in again.");
         router.replace(`/auth/signin?returnUrl=${encodeURIComponent(returnUrl)}`);
       }

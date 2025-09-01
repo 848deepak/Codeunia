@@ -1,7 +1,6 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function verifyAdminAuth(request?: NextRequest) {
+export async function verifyAdminAuth() {
   try {
     const serverSupabase = await createClient()
     const { data: { user }, error: authError } = await serverSupabase.auth.getUser()
@@ -11,7 +10,7 @@ export async function verifyAdminAuth(request?: NextRequest) {
     }
     
     return { isAdmin: true, user, error: null }
-  } catch (error) {
+  } catch {
     return { isAdmin: false, user: null, error: 'Authentication check failed' }
   }
 }
