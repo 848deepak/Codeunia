@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { eventsService } from '@/lib/services/events'
+import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
 
 // GET: Fetch a single event by slug
 export async function GET(request: NextRequest) {
@@ -28,6 +29,11 @@ export async function GET(request: NextRequest) {
 // PUT: Update an event
 export async function PUT(request: NextRequest) {
   try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+    }
     const { pathname } = request.nextUrl
     const slug = pathname.split('/').pop() || ''
     const eventData = await request.json()
@@ -47,6 +53,11 @@ export async function PUT(request: NextRequest) {
 // DELETE: Delete an event
 export async function DELETE(request: NextRequest) {
   try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+    }
     const { pathname } = request.nextUrl
     const slug = pathname.split('/').pop() || ''
     await eventsService.deleteEvent(slug)

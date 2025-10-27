@@ -13,11 +13,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 
 export function JudgesForm() {
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         // Personal Information
@@ -38,9 +34,13 @@ export function JudgesForm() {
         expertiseAreas: [] as string[],
         eventTypes: [] as string[],
         
-        // Additional Information
-        motivation: "",
-        previousJudging: "",
+        // Motivation
+        whyJudge: "",
+        availability: "",
+        
+        // Consent
+        termsAccepted: false,
+        contactPermission: false,
     });
 
     const expertiseAreas = [
@@ -64,7 +64,7 @@ export function JudgesForm() {
         { value: "startup-pitch", label: "Startup Pitch Events" },
     ];
 
-    const handleInputChange = (field: string, value: string | string[]) => {
+    const handleInputChange = (field: string, value: string | string[] | boolean) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
@@ -89,8 +89,11 @@ export function JudgesForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-
         try {
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
             const { error } = await supabase
                 .from('judges_applications')
                 .insert([
@@ -107,18 +110,17 @@ export function JudgesForm() {
                         linkedin: formData.linkedin,
                         expertise_areas: formData.expertiseAreas,
                         event_types: formData.eventTypes,
-                        motivation: formData.motivation,
-                        previous_judging: formData.previousJudging,
+                        why_judge: formData.whyJudge,
+                        availability: formData.availability,
+                        terms_accepted: formData.termsAccepted,
+                        contact_permission: formData.contactPermission,
                         status: 'pending',
                         created_at: new Date().toISOString(),
                     }
                 ]);
-
             if (error) throw error;
-
-            toast.success('Application submitted successfully! We will get back to you within 48 hours.');
-            
-            // Reset form
+            toast.success('Application submitted successfully!');
+            // reset
             setFormData({
                 firstName: "",
                 lastName: "",
@@ -132,11 +134,13 @@ export function JudgesForm() {
                 linkedin: "",
                 expertiseAreas: [],
                 eventTypes: [],
-                motivation: "",
-                previousJudging: "",
+                whyJudge: "",
+                availability: "",
+                termsAccepted: false,
+                contactPermission: false,
             });
         } catch (error) {
-            console.error('Error submitting form:', error);
+            console.error('Error submitting application:', error);
             toast.error('Failed to submit application. Please try again later.');
         } finally {
             setIsSubmitting(false);
@@ -145,8 +149,8 @@ export function JudgesForm() {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
         >
@@ -337,11 +341,11 @@ export function JudgesForm() {
                             <h3 className="text-lg font-semibold border-b pb-2">Additional Information</h3>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="motivation">Why do you want to be a judge? *</Label>
+                                    <Label htmlFor="whyJudge">Why do you want to be a judge? *</Label>
                                     <Textarea
-                                        id="motivation"
-                                        value={formData.motivation}
-                                        onChange={(e) => handleInputChange("motivation", e.target.value)}
+                                        id="whyJudge"
+                                        value={formData.whyJudge}
+                                        onChange={(e) => handleInputChange("whyJudge", e.target.value)}
                                         placeholder="Tell us about your motivation and what you hope to contribute as a judge..."
                                         rows={4}
                                         required
@@ -349,16 +353,43 @@ export function JudgesForm() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="previousJudging">Previous Judging Experience</Label>
+                                    <Label htmlFor="availability">Availability for Judging</Label>
                                     <Textarea
-                                        id="previousJudging"
-                                        value={formData.previousJudging}
-                                        onChange={(e) => handleInputChange("previousJudging", e.target.value)}
-                                        placeholder="Describe any previous experience as a judge, evaluator, or mentor..."
+                                        id="availability"
+                                        value={formData.availability}
+                                        onChange={(e) => handleInputChange("availability", e.target.value)}
+                                        placeholder="When are you available to judge? (e.g., weekends, weekdays, specific dates)"
                                         rows={3}
                                         className="focus:ring-2 focus:ring-primary/20 bg-background/30 backdrop-blur-sm border-white/10 hover:border-primary/20 transition-colors resize-none"
                                     />
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Consent and Terms */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold border-b pb-2">Consent and Terms</h3>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="termsAccepted"
+                                    checked={formData.termsAccepted}
+                                    onCheckedChange={(checked) => handleInputChange("termsAccepted", checked)}
+                                    className="border-white/10 focus:ring-primary/20 bg-background/30"
+                                />
+                                <Label htmlFor="termsAccepted" className="cursor-pointer">
+                                    I agree to the <a href="/terms" target="_blank" className="underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="underline">Privacy Policy</a>.
+                                </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="contactPermission"
+                                    checked={formData.contactPermission}
+                                    onCheckedChange={(checked) => handleInputChange("contactPermission", checked)}
+                                    className="border-white/10 focus:ring-primary/20 bg-background/30"
+                                />
+                                <Label htmlFor="contactPermission" className="cursor-pointer">
+                                    I agree to receive communications from CodeFest.
+                                </Label>
                             </div>
                         </div>
 

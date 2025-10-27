@@ -17,9 +17,11 @@ import { useAuth } from "@/lib/hooks/useAuth"
 export function UserIcon() {
   const { user } = useAuth()
   const router = useRouter()
-  const supabase = createClient()
+  // Create client only when needed to avoid issues during prerender
+  const getSupabase = () => createClient()
 
   const handleLogout = async () => {
+    const supabase = getSupabase()
     await supabase.auth.signOut()
     router.push("/")
     router.refresh()

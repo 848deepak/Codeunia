@@ -13,11 +13,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 
 export function VolunteerForm() {
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         // Personal Information
@@ -39,6 +35,10 @@ export function VolunteerForm() {
         // Additional Information
         motivation: "",
         previousVolunteer: "",
+        
+        // Consent
+        termsAccepted: false,
+        contactPermission: false,
     });
 
     const volunteerInterests = [
@@ -65,10 +65,12 @@ export function VolunteerForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
         setIsSubmitting(true);
-
         try {
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
             const { error } = await supabase
                 .from('volunteer_applications')
                 .insert([
@@ -84,17 +86,15 @@ export function VolunteerForm() {
                         skills: formData.skills,
                         interests: formData.interests,
                         motivation: formData.motivation,
-                        previous_volunteer: formData.previousVolunteer,
+                        terms_accepted: formData.termsAccepted,
+                        contact_permission: formData.contactPermission,
                         status: 'pending',
                         created_at: new Date().toISOString(),
                     }
                 ]);
-
             if (error) throw error;
-
-            toast.success('Application submitted successfully! We will get back to you within 48 hours.');
-            
-            // reset form
+            toast.success('Application submitted successfully!');
+            // reset
             setFormData({
                 firstName: "",
                 lastName: "",
@@ -108,9 +108,11 @@ export function VolunteerForm() {
                 interests: [],
                 motivation: "",
                 previousVolunteer: "",
+                termsAccepted: false,
+                contactPermission: false,
             });
         } catch (error) {
-            console.error('Error submitting form:', error);
+            console.error('Error submitting application:', error);
             toast.error('Failed to submit application. Please try again later.');
         } finally {
             setIsSubmitting(false);

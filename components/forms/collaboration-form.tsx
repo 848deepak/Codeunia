@@ -12,11 +12,8 @@ import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 
 export function CollaborationForm() {
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
+    
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         // organization information
@@ -50,6 +47,10 @@ export function CollaborationForm() {
         setIsSubmitting(true);
 
         try {
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
             const { error } = await supabase
                 .from('collaboration_applications')
                 .insert([
@@ -59,16 +60,14 @@ export function CollaborationForm() {
                         contact_person: formData.contactPerson,
                         email: formData.email,
                         collaboration_reason: formData.collaborationReason,
-                        status: 'pending',
+                        status: 'new',
                         created_at: new Date().toISOString(),
                     }
                 ]);
 
             if (error) throw error;
 
-            toast.success('Collaboration application submitted successfully! We will get back to you within 48 hours.');
-            
-            // Reset form
+            toast.success("Application submitted successfully!");
             setFormData({
                 organizationName: "",
                 website: "",
@@ -86,10 +85,11 @@ export function CollaborationForm() {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
+            className="grid md:grid-cols-2 gap-8"
         >
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Organization Information */}

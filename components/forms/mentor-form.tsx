@@ -13,11 +13,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 
 export function MentorForm() {
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         // Personal Information
@@ -40,10 +36,14 @@ export function MentorForm() {
         availability: "",
         commitment: "",
         
-        // Additional Information
-        motivation: "",
+        // Motivation
+        whyMentor: "",
         previousMentoring: "",
         teachingStyle: "",
+        
+        // Consent
+        termsAccepted: false,
+        contactPermission: false,
     });
 
     const expertiseAreas = [
@@ -109,8 +109,11 @@ export function MentorForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-
         try {
+            const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
             const { error } = await supabase
                 .from('mentor_applications')
                 .insert([
@@ -128,20 +131,16 @@ export function MentorForm() {
                         expertise_areas: formData.expertiseAreas,
                         mentoring_types: formData.mentoringTypes,
                         availability: formData.availability,
-                        commitment: formData.commitment,
-                        motivation: formData.motivation,
-                        previous_mentoring: formData.previousMentoring,
-                        teaching_style: formData.teachingStyle,
+                        why_mentor: formData.whyMentor,
+                        terms_accepted: formData.termsAccepted,
+                        contact_permission: formData.contactPermission,
                         status: 'pending',
                         created_at: new Date().toISOString(),
                     }
                 ]);
-
             if (error) throw error;
-
-            toast.success('Application submitted successfully! We will get back to you within 48 hours.');
-            
-            // Reset form
+            toast.success('Application submitted successfully!');
+            // reset form
             setFormData({
                 firstName: "",
                 lastName: "",
@@ -157,12 +156,14 @@ export function MentorForm() {
                 mentoringTypes: [],
                 availability: "",
                 commitment: "",
-                motivation: "",
+                whyMentor: "",
                 previousMentoring: "",
                 teachingStyle: "",
+                termsAccepted: false,
+                contactPermission: false,
             });
         } catch (error) {
-            console.error('Error submitting form:', error);
+            console.error('Error submitting application:', error);
             toast.error('Failed to submit application. Please try again later.');
         } finally {
             setIsSubmitting(false);
@@ -404,8 +405,8 @@ export function MentorForm() {
                                     <Label htmlFor="motivation">Why do you want to be a mentor? *</Label>
                                     <Textarea
                                         id="motivation"
-                                        value={formData.motivation}
-                                        onChange={(e) => handleInputChange("motivation", e.target.value)}
+                                        value={formData.whyMentor}
+                                        onChange={(e) => handleInputChange("whyMentor", e.target.value)}
                                         placeholder="Tell us about your motivation and what you hope to achieve as a mentor..."
                                         rows={4}
                                         required
