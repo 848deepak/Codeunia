@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifyAdminAuth } from '@/lib/auth/admin'
 
 // Admin-only endpoint for event management
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication first
+    const { isAdmin, error: authError } = await verifyAdminAuth()
+    if (!isAdmin) {
+      return NextResponse.json({ error: authError }, { status: 401 })
+    }
+
     const eventData = await request.json()
     
     // Use service role client for admin operations (bypasses RLS)
@@ -86,6 +93,12 @@ export async function POST(request: NextRequest) {
 // Update event
 export async function PUT(request: NextRequest) {
   try {
+    // Check authentication first
+    const { isAdmin, error: authError } = await verifyAdminAuth()
+    if (!isAdmin) {
+      return NextResponse.json({ error: authError }, { status: 401 })
+    }
+
     const eventData = await request.json()
     const { slug, ...updateData } = eventData
     
@@ -165,6 +178,12 @@ export async function PUT(request: NextRequest) {
 // Delete event
 export async function DELETE(request: NextRequest) {
   try {
+    // Check authentication first
+    const { isAdmin, error: authError } = await verifyAdminAuth()
+    if (!isAdmin) {
+      return NextResponse.json({ error: authError }, { status: 401 })
+    }
+
     const { slug } = await request.json()
     
     if (!slug) {

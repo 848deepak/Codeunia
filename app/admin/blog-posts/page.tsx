@@ -505,19 +505,14 @@ export default function AdminBlogPage() {
         slug: formData.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
       }
 
-      console.log('Insert data:', insertData) // Debug log
-
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from("blogs")
         .insert([insertData])
         .select()
 
       if (error) {
-        console.error('Supabase error:', error)
         throw error
       }
-
-      console.log('Create successful:', data) // Debug log
 
       setShowCreate(false)
       resetForm()
@@ -558,20 +553,15 @@ export default function AdminBlogPage() {
         image: formData.image.trim(),
       }
 
-      console.log('Update data:', updateData) // Debug log
-
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from("blogs")
         .update(updateData)
         .eq("id", showEdit.id)
         .select()
 
       if (error) {
-        console.error('Supabase error:', error)
         throw error
       }
-
-      console.log('Update successful:', data) // Debug log
 
       setShowEdit(null)
       resetForm()

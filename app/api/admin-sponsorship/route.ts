@@ -1,14 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdminAuth } from "@/lib/auth/admin";
 
-// Setup Supabase client with service role key (bypasses RLS)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Function to create Supabase client with service role key (bypasses RLS)
+function createAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // GET: List all sponsorship applications
 export async function GET() {
+  const { isAdmin, error: authError } = await verifyAdminAuth()
+  if (!isAdmin) {
+    return NextResponse.json({ error: authError }, { status: 401 })
+  }
+
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sponsorship_applications")
     .select("*")
@@ -23,6 +32,7 @@ export async function GET() {
 // POST: Create a new sponsorship application
 export async function POST(req: Request) {
   const body = await req.json();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sponsorship_applications")
     .insert([body])
@@ -35,12 +45,18 @@ export async function POST(req: Request) {
 }
 
 // PATCH: Update a sponsorship application (expects { id, ...fields })
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
+  const { isAdmin, error: authError } = await verifyAdminAuth()
+  if (!isAdmin) {
+    return NextResponse.json({ error: authError }, { status: 401 })
+  }
+
   const body = await req.json();
   const { id, ...fields } = body;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sponsorship_applications")
     .update(fields)
@@ -54,12 +70,18 @@ export async function PATCH(req: Request) {
 }
 
 // DELETE: Delete a sponsorship application (expects { id })
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
+  const { isAdmin, error: authError } = await verifyAdminAuth()
+  if (!isAdmin) {
+    return NextResponse.json({ error: authError }, { status: 401 })
+  }
+
   const body = await req.json();
   const { id } = body;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("sponsorship_applications")
     .delete()

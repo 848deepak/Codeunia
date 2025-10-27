@@ -238,7 +238,6 @@ export default function AdminDashboard() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem("isAdmin", "true")
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
